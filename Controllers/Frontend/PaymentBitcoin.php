@@ -61,7 +61,7 @@ class Shopware_Controllers_Frontend_PaymentBitcoin extends Shopware_Controllers_
     /**
      * Gateway payment action method.
      *
-     * Collects the payment information and transmit it to the blockchain.info.
+     * Collects the payment information and transmit it to the blockchain.com.
      */
     public function gatewayAction()
     {
@@ -74,7 +74,8 @@ class Shopware_Controllers_Frontend_PaymentBitcoin extends Shopware_Controllers_
             if (!in_array($currency_iso_code, $limited_currencies)) {
                 $this->redirect(array('controller' => 'checkout'));
             } else {
-                $value_in_BTC = file_get_contents("https://blockchain.info/tobtc?currency=".$currency_iso_code."&value=".$amountdue."");
+                //$value_in_BTC = file_get_contents("https://blockchain.info/tobtc?currency=".$currency_iso_code."&value=".$amountdue."");
+                $value_in_BTC = file_get_contents("https://www.blockchain.com/tobtc?currency=".$currency_iso_code."&value=".$amountdue."");
                 if ($value_in_BTC > 0) {
                     /** @var TYPE_NAME $zw_extended_public_key */
                     $zw_extended_public_key = Shopware()->Config()->getByNamespace('ZwWebPaymentBitcoin', 'zw_extended_public_key');
@@ -89,7 +90,8 @@ class Shopware_Controllers_Frontend_PaymentBitcoin extends Shopware_Controllers_
 
                     $xpub = trim($zw_extended_public_key);
                     $api_key = trim($zw_blockchain_api_key);
-                    $blockchain_url = 'https://api.blockchain.info/v2/receive?xpub='.$xpub.'&callback='.urlencode($callback_url).'&key='.$api_key.'';
+                    $blockchain_url = 'https://api.blockchain.com/v2/receive?xpub='.$xpub.'&callback='.urlencode($callback_url).'&key='.$api_key.'';
+                    //$blockchain_url = 'https://api.blockchain.info/v2/receive?xpub='.$xpub.'&callback='.urlencode($callback_url).'&key='.$api_key.'';
                     //$blockchain_url = 'https://api.blockchain.info/v2/receive?xpub='.$xpub.'&callback='.urlencode($callback_url).'&gap_limit=99&key='.$api_key.'';
 
                     $address = false;
@@ -171,14 +173,18 @@ class Shopware_Controllers_Frontend_PaymentBitcoin extends Shopware_Controllers_
         $config_secret = Shopware()->Config()->getByNamespace('ZwWebPaymentBitcoin', 'zw_callback_secret');
 
         $result = Shopware()->Db()->fetchRow("SELECT * FROM `zwilla_free_bitcoin_address` WHERE `address` = '".$address."'");
-        if ($result) {
+
+        if ($result)
+        {
             $id_order = $result['id_order'];
             $to_pay_in_BTC = $result['value_in_BTC'];
             $userId = Shopware()->Db()->fetchOne('SELECT `userID` FROM `s_order` WHERE `id` = ?', $id_order);
             $secret_sent = strtoupper(md5($config_secret.'-'.$userId));
 
-            if ($secret_sent === $secret) {
-                if ($confirmations <= 5) {
+            if ($secret_sent === $secret)
+            {
+                if ($confirmations <= 5)
+                {
                     Shopware()->Db()->exec("INSERT IGNORE INTO `zwilla_free_bitcoin_transaction` 
                         (`transaction_hash`,`address`,`confirmations`,`value_in_satoshi`,`crdate`) 
                     VALUES
@@ -189,7 +195,9 @@ class Shopware_Controllers_Frontend_PaymentBitcoin extends Shopware_Controllers_
 
                     echo '*waiting 6 confirmations*';
                     exit;
-                } elseif ($confirmations > 5) {
+                }
+                elseif ($confirmations >= 6)
+                {
                     Shopware()->Db()->exec("INSERT IGNORE INTO `zwilla_free_bitcoin_transaction` 
                         (`transaction_hash`,`address`,`confirmations`,`value_in_satoshi`,`crdate`) 
                     VALUES
@@ -199,22 +207,28 @@ class Shopware_Controllers_Frontend_PaymentBitcoin extends Shopware_Controllers_
                     $total_paid_in_satoshi = (double)Shopware()->Db()->fetchOne("
                         SELECT SUM(`value_in_satoshi`)
                         FROM `zwilla_free_bitcoin_transaction`
-                        WHERE `address` = '".$address."' AND `confirmations` > 5");
+                        WHERE `address` = '".$address."' AND `confirmations` >= 5");
 
                     $total_paid_in_btc = $total_paid_in_satoshi / 100000000;
                     $order = Shopware()->Modules()->Order();
 
-                    if ($total_paid_in_btc >= $to_pay_in_BTC) {
-                        if ($total_paid_in_btc == $to_pay_in_BTC) {
+                    if ($total_paid_in_btc >= $to_pay_in_BTC)
+                    {
+                        if ($total_paid_in_btc == $to_pay_in_BTC)
+                        {
                             $order->setPaymentStatus($id_order, 12, true, 'Paid');
                             $order->setOrderStatus($id_order, 1, false, 'In Process');
                             Shopware()->Db()->exec("UPDATE `zwilla_free_bitcoin_address` SET `status` = 'Paid' WHERE `address` = '".$address."'");
-                        } elseif ($total_paid_in_btc > $to_pay_in_BTC) {
+                        }
+                        elseif ($total_paid_in_btc > $to_pay_in_BTC)
+                        {
                             $order->setPaymentStatus($id_order, 12, true, 'OverPaid');
                             $order->setOrderStatus($id_order, 8, false, 'Clarification Required, OverPaid');
                             Shopware()->Db()->exec("UPDATE `zwilla_free_bitcoin_address` SET `status` = 'OverPaid' WHERE `address` = '".$address."'");
                         }
-                    } elseif ($total_paid_in_btc < $to_pay_in_BTC) {
+                    }
+                    elseif ($total_paid_in_btc < $to_pay_in_BTC)
+                    {
                         $order->setPaymentStatus($id_order, 11, true, 'UnderPaid');
                         Shopware()->Db()->exec("UPDATE `zwilla_free_bitcoin_address` SET `status` = 'UnderPaid' WHERE `address` = '".$address."'");
                     }

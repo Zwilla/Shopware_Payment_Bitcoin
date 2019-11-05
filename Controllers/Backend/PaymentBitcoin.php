@@ -1,7 +1,7 @@
 <?php
 /*
  * (c) LX <lxhost.com@gmail.com>
- *
+ * (c) 2017 - 2019 zwilla <michael.padilla@zwilla.de>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
@@ -20,21 +20,27 @@ class Shopware_Controllers_Backend_PaymentBitcoin extends Shopware_Controllers_B
         $filter = $this->Request()->getParam('filter', false);
 
         $subShopFilter = null;
-        if ($filter && !empty($filter)) {
+
+        if ($filter && !empty($filter))
+        {
             $filter = array_pop($filter);
-            if ($filter['property'] == 'shopId') {
-                $subShopFilter = (int)$filter['value'];
+
+            if ($filter['property'] == 'shopId') {$subShopFilter = (int)$filter['value'];
             }
         }
 
-        if ($sort = $this->Request()->getParam('sort')) {
+        if ($sort = $this->Request()->getParam('sort'))
+        {
             $sort = current($sort);
         }
+
         $direction = empty($sort['direction']) || $sort['direction'] == 'DESC' ? 'DESC' : 'ASC';
         $property = empty($sort['property']) ? 'orderDate' : $sort['property'];
 
-        if ($filter) {
-            if ($filter['property'] == 'search') {
+        if ($filter)
+        {
+            if ($filter['property'] == 'search')
+            {
                 $this->Request()->setParam('search', $filter['value']);
             }
         }

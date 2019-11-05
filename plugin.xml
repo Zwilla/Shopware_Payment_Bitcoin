@@ -17,14 +17,14 @@
     <description lang="en" format="html">
         <![CDATA[
           <h2>Blockchain Receive Bitcoin Payments</h2>
-          <p>This module allows you to accept Bitcoin payments from your customers using blockchain.info's Receive Payments API V2.</p>
+          <p>This module allows you to accept Bitcoin payments from your customers using blockchain.com's Receive Payments API V2.</p>
         ]]>
     </description>
 
     <description lang="de" format="html">
         <![CDATA[
           <h2>Blockchain Receive Bitcoin Payments</h2>
-          <p>This module allows you to accept Bitcoin payments from your customers using blockchain.info's Receive Payments API V2.</p>
+          <p>This module allows you to accept Bitcoin payments from your customers using blockchain.com's Receive Payments API V2.</p>
         ]]>
     </description>
 
@@ -34,7 +34,11 @@
     </changelog>
 
     <changelog version="1.0.1">
-        <changes lang="de">Added plugin.xml</changes>
         <changes lang="en">Added plugin.xml</changes>
     </changelog>
+
+    <changelog version="1.0.2">
+        <changes lang="en">Some xsd files inlined and .info to .com</changes>
+    </changelog>
+
 </plugin>

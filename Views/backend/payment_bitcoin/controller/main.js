@@ -1,6 +1,6 @@
 /*
  * (c) LX <lxhost.com@gmail.com>
- *
+ * (c) 2017 - 2019 zwilla <michael.padilla@zwilla.de>
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
@@ -88,7 +88,7 @@ Ext.define('Shopware.apps.PaymentBitcoin.controller.Main', {
             grid = me.getList(),
             store = grid.store;
 
-        if (typeof(shopId) != "number" && shopId != '' && shopId != null) {
+        if (typeof(shopId) != "number" && shopId !== '' && shopId != null) {
             return;
         }
         store.clearFilter(true);
